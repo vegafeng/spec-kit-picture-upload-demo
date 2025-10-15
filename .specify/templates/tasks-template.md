@@ -7,7 +7,7 @@ description: "Task list template for feature implementation"
 **Input**: Design documents from `/specs/[###-feature-name]/`
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.
+**Tests**: Tests are MANDATORY per constitution requirements (≥90% coverage). All tasks must include corresponding test tasks to ensure quality gates are met.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -17,10 +17,10 @@ description: "Task list template for feature implementation"
 - Include exact file paths in descriptions
 
 ## Path Conventions
-- **Single project**: `src/`, `tests/` at repository root
-- **Web app**: `backend/src/`, `frontend/src/`
-- **Mobile**: `api/src/`, `ios/src/` or `android/src/`
-- Paths shown below assume single project - adjust based on plan.md structure
+- **Java Maven/Gradle**: `src/main/java/`, `src/test/java/` (standard Java project structure)
+- **Web app**: `backend/src/main/java/`, `frontend/src/`
+- **Microservices**: `service-name/src/main/java/`, `service-name/src/test/java/`
+- Paths shown below assume standard Java project - adjust based on plan.md structure
 
 <!-- 
   ============================================================================
@@ -76,21 +76,23 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 1 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 1 (MANDATORY per Constitution) ✅
 
-**NOTE: Write these tests FIRST, ensure they FAIL before implementation**
+**NOTE: Write these tests FIRST following TDD principles, ensure they FAIL before implementation**
 
-- [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T010 [P] [US1] Unit tests for [component] achieving ≥90% coverage in src/test/java/[package]/[Component]Test.java
+- [ ] T011 [P] [US1] Integration test for [user journey] in src/test/java/[package]/integration/[Name]IntegrationTest.java
+- [ ] T012 [P] [US1] Performance test for [endpoint] ensuring <200ms p95 in src/test/java/[package]/performance/[Name]PerformanceTest.java
 
 ### Implementation for User Story 1
 
-- [ ] T012 [P] [US1] Create [Entity1] model in src/models/[entity1].py
-- [ ] T013 [P] [US1] Create [Entity2] model in src/models/[entity2].py
-- [ ] T014 [US1] Implement [Service] in src/services/[service].py (depends on T012, T013)
-- [ ] T015 [US1] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T016 [US1] Add validation and error handling
-- [ ] T017 [US1] Add logging for user story 1 operations
+- [ ] T013 [P] [US1] Create [Entity1] model in src/main/java/[package]/model/[Entity1].java
+- [ ] T014 [P] [US1] Create [Entity2] model in src/main/java/[package]/model/[Entity2].java  
+- [ ] T015 [US1] Implement [Service] in src/main/java/[package]/service/[Service].java (depends on T013, T014)
+- [ ] T016 [US1] Implement [Controller/API] in src/main/java/[package]/controller/[Controller].java
+- [ ] T017 [US1] Add validation and error handling with proper exception hierarchy
+- [ ] T018 [US1] Add structured logging and monitoring for user story 1 operations
+- [ ] T019 [US1] Add static analysis and code quality checks (PMD, SpotBugs, Checkstyle)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -102,15 +104,16 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 2 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 2 (MANDATORY per Constitution) ✅
 
-- [ ] T018 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T019 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T020 [P] [US2] Unit tests for [component] achieving ≥90% coverage in src/test/java/[package]/[Component]Test.java
+- [ ] T021 [P] [US2] Integration test for [user journey] in src/test/java/[package]/integration/[Name]IntegrationTest.java
+- [ ] T022 [P] [US2] Performance test for [endpoint] ensuring <200ms p95 in src/test/java/[package]/performance/[Name]PerformanceTest.java
 
 ### Implementation for User Story 2
 
-- [ ] T020 [P] [US2] Create [Entity] model in src/models/[entity].py
-- [ ] T021 [US2] Implement [Service] in src/services/[service].py
+- [ ] T023 [P] [US2] Create [Entity] model in src/main/java/[package]/model/[Entity].java  
+- [ ] T024 [US2] Implement [Service] in src/main/java/[package]/service/[Service].java
 - [ ] T022 [US2] Implement [endpoint/feature] in src/[location]/[file].py
 - [ ] T023 [US2] Integrate with User Story 1 components (if needed)
 

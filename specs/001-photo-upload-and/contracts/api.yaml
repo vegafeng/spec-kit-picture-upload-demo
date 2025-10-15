@@ -1,0 +1,386 @@
+openapi: 3.0.3
+info:
+  title: Photo Management API
+  description: REST API for photo upload, organization, and management
+  version: 1.0.0
+  contact:
+    name: Photo Management System
+    
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+
+paths:
+  /photos:
+    get:
+      summary: Get all photos organized by date groups
+      description: Returns photos grouped by date in descending chronological order
+      responses:
+        '200':
+          description: Photos successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dateGroups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DateGroupWithPhotos'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      summary: Upload new photos
+      description: Upload one or more photos with automatic metadata extraction and thumbnail generation
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                photos:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Photo files to upload (max 50MB each)
+      responses:
+        '201':
+          description: Photos uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uploaded:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Photo'
+                  rejected:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        filename:
+                          type: string
+                        reason:
+                          type: string
+        '400':
+          description: Invalid request or file validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Duplicate photos detected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  duplicates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        filename:
+                          type: string
+                        existingPhoto:
+                          $ref: '#/components/schemas/Photo'
+        '413':
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /photos/{id}:
+    get:
+      summary: Get photo by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Photo found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Photo'
+        '404':
+          description: Photo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      summary: Delete photo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Photo deleted successfully
+        '404':
+          description: Photo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /photos/{id}/thumbnail:
+    get:
+      summary: Get photo thumbnail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: size
+          in: query
+          schema:
+            type: integer
+            enum: [150, 300]
+            default: 150
+          description: Thumbnail size in pixels
+      responses:
+        '200':
+          description: Thumbnail image
+          content:
+            image/webp:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Photo or thumbnail not found
+
+  /date-groups/{date}/reorder:
+    put:
+      summary: Reorder photos within a date group
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2025-01-15"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                photoIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  description: Array of photo IDs in desired order
+      responses:
+        '200':
+          description: Photos reordered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  updatedPhotos:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Photo'
+        '400':
+          description: Invalid request or photo IDs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Date group not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /date-groups/{date}/photos:
+    delete:
+      summary: Batch delete photos from date group
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                photoIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  description: Array of photo IDs to delete
+      responses:
+        '200':
+          description: Photos deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  deletedCount:
+                    type: integer
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Photo:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique photo identifier
+        filename:
+          type: string
+          description: Original filename
+        fileHash:
+          type: string
+          description: SHA-256 hash for duplicate detection
+        fileSize:
+          type: integer
+          description: File size in bytes
+        mimeType:
+          type: string
+          enum: [image/jpeg, image/png, image/webp, image/heic]
+        width:
+          type: integer
+          description: Image width in pixels
+        height:
+          type: integer
+          description: Image height in pixels
+        createdDate:
+          type: string
+          format: date-time
+          description: When photo was taken (from EXIF)
+        uploadedDate:
+          type: string
+          format: date-time
+          description: When photo was uploaded
+        sortOrder:
+          type: integer
+          description: Custom sort position within date group
+        thumbnailUrl:
+          type: string
+          format: uri
+          description: URL to thumbnail image
+        originalUrl:
+          type: string
+          format: uri
+          description: URL to original image
+      required:
+        - id
+        - filename
+        - fileHash
+        - fileSize
+        - mimeType
+        - width
+        - height
+        - createdDate
+        - uploadedDate
+        - sortOrder
+
+    DateGroup:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+          description: Date for this group (YYYY-MM-DD)
+        displayName:
+          type: string
+          description: Human-readable date label
+        photoCount:
+          type: integer
+          description: Number of photos in group
+        totalSize:
+          type: integer
+          description: Total file size of all photos
+        createdDate:
+          type: string
+          format: date-time
+        lastModified:
+          type: string
+          format: date-time
+      required:
+        - id
+        - date
+        - displayName
+        - photoCount
+        - totalSize
+
+    DateGroupWithPhotos:
+      allOf:
+        - $ref: '#/components/schemas/DateGroup'
+        - type: object
+          properties:
+            photos:
+              type: array
+              items:
+                $ref: '#/components/schemas/Photo'
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code for programmatic handling
+        details:
+          type: object
+          description: Additional error details
+      required:
+        - error

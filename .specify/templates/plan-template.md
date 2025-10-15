@@ -31,7 +31,21 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+**Quality Gates** (Mandatory):
+- [ ] Code quality metrics plan defined (complexity ≤10, duplication <3%, debt ratio <5%)
+- [ ] Test coverage strategy outlined (≥90% unit, ≥80% integration, ≥75% mutation)
+- [ ] Performance benchmarks specified (API <200ms p95, memory growth <1%/hour, CPU <70%)
+- [ ] Documentation requirements identified (API docs, architecture decisions, user guides)
+- [ ] CI/CD quality gates planned (static analysis, security scans, performance tests)
+
+**Security & Compliance**:
+- [ ] Security vulnerability scanning planned (0 high/critical tolerance)
+- [ ] Code review process defined (minimum 2 reviewers, constitutional compliance verification)
+
+**Performance Requirements**:
+- [ ] Load testing strategy defined for user-facing features
+- [ ] Performance regression testing planned
+- [ ] Monitoring and alerting approach specified
 
 ## Project Structure
 
